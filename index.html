@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>心动瞬间 · 恋爱冒险</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@300;400;700&display=swap');
+
+:root {
+  --primary: #e8a0bf;
+  --primary-dark: #c77dba;
+  --secondary: #b8d4e3;
+  --accent: #f5d5e0;
+  --bg-dark: #1a0a1e;
+  --bg-card: rgba(30, 15, 35, 0.85);
+  --text: #f0e6f3;
+  --text-dim: #b8a8c0;
+  --gold: #ffd700;
+  --heart: #ff4d6d;
+  --danger: #ff6b6b;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: 'Noto Sans SC', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text);
+}
+
+/* ===== 粒子背景 ===== */
+#particles-canvas {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ===== 主容器 ===== */
+#game-container {
+  position: relative;
+  width: 100%; height: 100%;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== 场景背景 ===== */
+#scene-bg {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: -1;
+  transition: all 1.5s ease;
+}
+
+.bg-sakura { background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 30%, #4a1942 60%, #1a0a2e 100%); }
+.bg-night { background: linear-gradient(135deg, #0a0a2e 0%, #1a1a4e 30%, #0d1b2a 60%, #0a0a1e 100%); }
+.bg-sunset { background: linear-gradient(135deg, #2d1b4e 0%, #5c3d6e 30%, #e8a0bf 60%, #ffd4a8 100%); }
+.bg-cafe { background: linear-gradient(135deg, #2a1a0e 0%, #3d2b1f 30%, #5c4033 60%, #2a1a0e 100%); }
+.bg-beach { background: linear-gradient(135deg, #0a2a4e 0%, #1a4a6e 30%, #e8a0bf 60%, #ffd4a8 100%); }
+.bg-room { background: linear-gradient(135deg, #1a1a2e 0%, #2d2d4e 30%, #3d3d5e 60%, #1a1a2e 100%); }
+.bg-rain { background: linear-gradient(135deg, #1a1a2e 0%, #2a2a3e 30%, #3a3a4e 60%, #1a1a2e 100%); }
+
+/* ===== 角色立绘区域 ===== */
+#character-display {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -55%);
+  width: 300px; height: 450px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.8s ease;
+}
+
+/* CSS 角色立绘 */
+.character-art {
+  width: 280px; height: 420px;
+  position: relative;
+  opacity: 0;
+  transition: all 0.8s ease;
+  filter: drop-shadow(0 10px 30px rgba(0,0,0,0.5));
+}
+
+.character-art.active {
+  opacity: 1;
+  animation: characterEnter 0.8s ease;
+}
+
+@keyframes characterEnter {
+  0% { opacity: 0; transform: translateY(30px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 角色身体 */
+.char-body {
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 160px; height: 320px;
+  border-radius: 80px 80px 40px 40px;
+  overflow: hidden;
+}
+
+.char-hair {
+  position: absolute;
+  top: -20px; left: 50%;
+  transform: translateX(-50%);
+  width: 200px; height: 180px;
+  border-radius: 100px 100px 60px 60px;
+  z-index: 2;
+}
+
+.char-face {
+  position: absolute;
+  top: 80px; left: 50%;
+  transform: translateX(-50%);
+  width: 120px; height: 140px;
+  border-radius: 60px 60px 50px 50px;
+  background: #fce4d6;
+  z-index: 3;
+}
+
+.char-eyes {
+  position: absolute;
+  top: 35px; left: 50%;
+  transform: translateX(-50%);
+  width: 80px; height: 30px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.char-eye {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+}
+
+.char-eye::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 5px;
+  width: 12px; height: 12px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+.char-mouth {
+  position: absolute;
+  bottom: 30px; left: 50%;
+  transform: translateX(-50%);
+  width: 20px; height: 10px;
+  border-radius: 0 0 10px 10px;
+  border: 2px solid #e8a0a0;
+  border-top: none;
+}
+
+.char-blush {
+  position: absolute;
+  top: 55px; left: 50%;
+  transform: translateX(-50%);
+  width: 100px; height: 20px;
+  display: flex;
+  justify-content: space-between;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.char-blush.show { opacity: 0.6; }
+
+.char-blush span {
+  width: 30px; height: 15px;
+  background: #ff9999;
+  border-radius: 50%;
+  filter: blur(3px);
+}
+
+/* 小夏 - 粉色系 */
+.xiaoxia .char-hair { background: linear-gradient(180deg, #4a2040 0%, #6a3060 100%); }
+.xiaoxia .char-body {
+  background: linear-gradient(180deg, #ffd4e8 0%, #ffa0c0 100%);
+  box-shadow: inset 0 0 30px rgba(255,200,220,0.3);
+}
+.xiaoxia .char-eye { background: #2a1a3a; }
+.xiaoxia .char-mouth { border-color: #e8a0a0; }
+
+/* 晚晴 - 蓝紫色系 */
+.wanqing .char-hair { background: linear-gradient(180deg, #1a1a3a 0%, #2a2a5a 100%); }
+.wanqing .char-body {
+  background: linear-gradient(180deg, #c8d8f0 0%, #a0b0d0 100%);
+  box-shadow: inset 0 0 30px rgba(200,220,240,0.3);
+}
+.wanqing .char-eye { background: #1a2a4a; }
+.wanqing .char-mouth { border-color: #c0a0b0; }
+
+/* 雨桐 - 绿色系 */
+.yutong .char-hair { background: linear-gradient(180deg, #2a3a2a 0%, #3a5a3a 100%); }
+.yutong .char-body {
+  background: linear-gradient(180deg, #d8e8d0 0%, #b0d0a0 100%);
+  box-shadow: inset 0 0 30px rgba(200,230,200,0.3);
+}
+.yutong .char-eye { background: #1a3a2a; }
+.yutong .char-mouth { border-color: #c0b0a0; }
+
+/* 角色名标签 */
+.char-name-tag {
+  position: absolute;
+  bottom: -40px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(200, 150, 200, 0.2);
+  padding: 5px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  color: var(--primary);
+  white-space: nowrap;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(200, 150, 200, 0.3);
+}
+
+/* ===== 好感度显示 ===== */
+#affection-display {
+  position: absolute;
+  top: 20px; right: 20px;
+  background: var(--bg-card);
+  padding: 15px 20px;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(200, 150, 200, 0.2);
+  min-width: 200px;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+#affection-display.show { opacity: 1; }
+
+.affection-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.affection-bar {
+  height: 8px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.affection-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--heart), var(--primary));
+  border-radius: 4px;
+  transition: width 0.8s ease;
+  box-shadow: 0 0 10px rgba(255, 77, 109, 0.5);
+}
+
+.affection-text {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: right;
+}
+
+/* ===== 对话框 ===== */
+#dialogue-box {
+  position: absolute;
+  bottom: 30px; left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 800px;
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 25px 30px;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(200, 150, 200, 0.15);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: all 0.5s ease;
+}
+
+#dialogue-box.show { opacity: 1; }
+
+#speaker-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 12px;
+  font-family: 'Noto Serif SC', serif;
+}
+
+#dialogue-text {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text);
+  min-height: 50px;
+}
+
+#dialogue-text .highlight {
+  color: var(--heart);
+  font-weight: 700;
+}
+
+/* ===== 选项区域 ===== */
+#choices-container {
+  position: absolute;
+  bottom: 30px; left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  opacity: 0;
+  transition: opacity 0.5s;
+  pointer-events: none;
+}
+
+#choices-container.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.choice-btn {
+  background: var(--bg-card);
+  border: 1px solid rgba(200, 150, 200, 0.2);
+  border-radius: 15px;
+  padding: 18px 25px;
+  color: var(--text);
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  text-align: left;
+  font-family: 'Noto Sans SC', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.choice-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(232, 160, 191, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.choice-btn:hover {
+  border-color: var(--primary);
+  background: rgba(232, 160, 191, 0.15);
+  transform: translateX(5px);
+  box-shadow: 0 5px 20px rgba(232, 160, 191, 0.2);
+}
+
+.choice-btn:hover::before { left: 100%; }
+
+.choice-btn .choice-hint {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 5px;
+  opacity: 0.7;
+}
+
+/* ===== 心跳特效 ===== */
+.heart-burst {
+  position: fixed;
+  pointer-events: none;
+  z-index: 100;
+  animation: heartFloat 2s ease-out forwards;
+}
+
+@keyframes heartFloat {
+  0% { opacity: 1; transform: scale(0) translateY(0); }
+  50% { opacity: 1; transform: scale(1.2) translateY(-30px); }
+  100% { opacity: 0; transform: scale(0.8) translateY(-100px); }
+}
+
+/* ===== 标题画面 ===== */
+#title-screen {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 30%, #4a1942 60%, #1a0a2e 100%);
+}
+
+#title-screen h1 {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 56px;
+  background: linear-gradient(135deg, #ffa0c0, #e8a0bf, #c080b0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 10px;
+  text-shadow: none;
+  animation: titleGlow 3s ease-in-out infinite;
+}
+
+@keyframes titleGlow {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.3); }
+}
+
+#title-screen .subtitle {
+  font-size: 18px;
+  color: var(--text-dim);
+  margin-bottom: 50px;
+  font-family: 'Noto Serif SC', serif;
+}
+
+.start-btn {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border: none;
+  padding: 18px 60px;
+  border-radius: 30px;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-weight: 700;
+  letter-spacing: 2px;
+  box-shadow: 0 5px 30px rgba(232, 160, 191, 0.3);
+}
+
+.start-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 40px rgba(232, 160, 191, 0.5);
+}
+
+/* ===== CG 画面 ===== */
+#cg-overlay {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.9);
+  z-index: 50;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+#cg-overlay.show {
+  display: flex;
+  animation: fadeIn 1s ease;
+}
+
+.cg-frame {
+  width: 90%; max-width: 700px;
+  height: 70vh;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.cg-scene {
+  width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.cg-text {
+  position: absolute;
+  bottom: 30px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.6);
+  padding: 15px 30px;
+  border-radius: 15px;
+  font-size: 16px;
+  color: var(--text);
+  max-width: 80%;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+/* ===== 好感度变化提示 ===== */
+.affection-change {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: 700;
+  z-index: 100;
+  pointer-events: none;
+  animation: affectionPopup 1.5s ease-out forwards;
+}
+
+.affection-change.positive { color: var(--heart); }
+.affection-change.negative { color: var(--danger); }
+
+@keyframes affectionPopup {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+  50% { opacity: 1; transform: translate(-50%, -70%) scale(1.2); }
+  100% { opacity: 0; transform: translate(-50%, -100%) scale(1); }
+}
+
+/* ===== 场景标题 ===== */
+.scene-title {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Noto Serif SC', serif;
+  font-size: 36px;
+  color: var(--text);
+  z-index: 20;
+  text-align: center;
+  opacity: 0;
+  animation: sceneTitleAnim 3s ease-in-out forwards;
+}
+
+@keyframes sceneTitleAnim {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+  30% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  70% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+/* ===== 结局画面 ===== */
+#ending-screen {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 60;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 40px;
+}
+
+#ending-screen.show { display: flex; }
+
+#ending-screen h2 {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 42px;
+  margin-bottom: 20px;
+  animation: titleGlow 3s ease-in-out infinite;
+}
+
+#ending-screen .ending-text {
+  font-size: 18px;
+  line-height: 2;
+  max-width: 600px;
+  color: var(--text);
+  margin-bottom: 40px;
+}
+
+#ending-screen .ending-type {
+  font-size: 14px;
+  color: var(--primary);
+  margin-bottom: 30px;
+  padding: 8px 20px;
+  border: 1px solid var(--primary);
+  border-radius: 20px;
+}
+
+/* ===== 菜单按钮 ===== */
+.menu-btn {
+  position: absolute;
+  top: 20px; left: 20px;
+  background: var(--bg-card);
+  border: 1px solid rgba(200, 150, 200, 0.2);
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 14px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s;
+  z-index: 5;
+}
+
+.menu-btn:hover {
+  background: rgba(232, 160, 191, 0.2);
+  color: var(--text);
+}
+
+/* ===== 自动播放/快进 ===== */
+#auto-btn, #skip-btn {
+  position: absolute;
+  top: 20px;
+  background: var(--bg-card);
+  border: 1px solid rgba(200, 150, 200, 0.2);
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 12px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s;
+}
+
+#auto-btn { right: 230px; }
+#skip-btn { right: 140px; }
+
+#auto-btn.active, #skip-btn.active {
+  background: rgba(232, 160, 191, 0.3);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* ===== 存档提示 ===== */
+.save-indicator {
+  position: fixed;
+  top: 20px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card);
+  padding: 10px 25px;
+  border-radius: 10px;
+  color: var(--primary);
+  font-size: 14px;
+  z-index: 100;
+  animation: fadeInOut 2s ease forwards;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ===== 回顾按钮 ===== */
+.history-btn {
+  position: absolute;
+  top: 20px; right: 20px;
+  background: var(--bg-card);
+  border: 1px solid rgba(200, 150, 200, 0.2);
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 12px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s;
+}
+
+.history-btn:hover {
+  background: rgba(232, 160, 191, 0.2);
+  color: var(--text);
+}
+
+/* ===== 天气效果 ===== */
+.rain-drop {
+  position: fixed;
+  width: 2px;
+  background: linear-gradient(transparent, rgba(174, 194, 224, 0.5));
+  pointer-events: none;
+  z-index: 1;
+  animation: rainFall linear infinite;
+}
+
+@keyframes rainFall {
+  0% { transform: translateY(-100vh); opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+.sakura-petal {
+  position: fixed;
+  width: 12px; height: 12px;
+  background: radial-gradient(ellipse, #ffb7c5, #ff8fa3);
+  border-radius: 50% 0 50% 50%;
+  pointer-events: none;
+  z-index: 1;
+  animation: sakuraFall linear infinite;
+  opacity: 0.7;
+}
+
+@keyframes sakuraFall {
+  0% { transform: translateY(-20px) rotate(0deg) translateX(0); opacity: 0.7; }
+  100% { transform: translateY(100vh) rotate(360deg) translateX(100px); opacity: 0; }
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 768px) {
+  #title-screen h1 { font-size: 36px; }
+  #dialogue-box { padding: 20px; width: 95%; }
+  #dialogue-text { font-size: 14px; }
+  .choice-btn { padding: 15px 20px; font-size: 14px; }
+  #character-display { width: 200px; height: 300px; }
+  .character-art { width: 180px; height: 280px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="particles-canvas"></canvas>
+
+<div id="scene-bg" class="bg-sakura"></div>
+
+<!-- 标题画面 -->
+<div id="title-screen">
+  <h1>心动瞬间</h1>
+  <p class="subtitle">— 恋爱冒险 —</p>
+  <button class="start-btn" onclick="startGame()">开始游戏</button>
+</div>
+
+<!-- CG 画面 -->
+<div id="cg-overlay">
+  <div class="cg-frame">
+    <div class="cg-scene" id="cg-scene"></div>
+  </div>
+  <div class="cg-text" id="cg-text"></div>
+</div>
+
+<!-- 结局画面 -->
+<div id="ending-screen">
+  <h2 id="ending-title"></h2>
+  <div class="ending-type" id="ending-type"></div>
+  <div class="ending-text" id="ending-text"></div>
+  <button class="start-btn" onclick="location.reload()">重新开始</button>
+</div>
+
+<!-- 游戏主体 -->
+<div id="game-container" style="display:none;">
+
+  <div id="character-display">
+    <div class="character-art xiaoxia" id="char-xiaoxia">
+      <div class="char-hair"></div>
+      <div class="char-face">
+        <div class="char-eyes">
+          <div class="char-eye"></div>
+          <div class="char-eye"></div>
+        </div>
+        <div class="char-blush" id="blush-xiaoxia">
+          <span></span><span></span>
+        </div>
+        <div class="char-mouth"></div>
+      </div>
+      <div class="char-body"></div>
+      <div class="char-name-tag">林小夏</div>
+    </div>
+
+    <div class="character-art wanqing" id="char-wanqing">
+      <div class="char-hair"></div>
+      <div class="char-face">
+        <div class="char-eyes">
+          <div class="char-eye"></div>
+          <div class="char-eye"></div>
+        </div>
+        <div class="char-blush" id="blush-wanqing">
+          <span></span><span></span>
+        </div>
+        <div class="char-mouth"></div>
+      </div>
+      <div class="char-body"></div>
+      <div class="char-name-tag">苏晚晴</div>
+    </div>
+
+    <div class="character-art yutong" id="char-yutong">
+      <div class="char-hair"></div>
+      <div class="char-face">
+        <div class="char-eyes">
+          <div class="char-eye"></div>
+          <div class="char-eye"></div>
+        </div>
+        <div class="char-blush" id="blush-yutong">
+          <span></span><span></span>
+        </div>
+        <div class="char-mouth"></div>
+      </div>
+      <div class="char-body"></div>
+      <div class="char-name-tag">江雨桐</div>
+    </div>
+  </div>
+
+  <div id="affection-display">
+    <div class="affection-label">💕 好感度</div>
+    <div class="affection-bar">
+      <div class="affection-fill" id="affection-fill" style="width:0%"></div>
+    </div>
+    <div class="affection-text" id="affection-text">0 / 100</div>
+  </div>
+
+  <button class="menu-btn" onclick="showMenu()">☰ 菜单</button>
+  <button id="auto-btn" onclick="toggleAuto()">自动</button>
+  <button id="skip-btn" onclick="toggleSkip()">快进</button>
+
+  <div id="dialogue-box">
+    <div id="speaker-name"></div>
+    <div id="dialogue-text"></div>
+  </div>
+
+  <div id="choices-container"></div>
+</div>
+
+<script>
+// ===== 游戏状态 =====
+const gameState = {
+  currentScene: 0,
+  affection: { xiaoxia: 0, wanqing: 0, yutong: 0 },
+  flags: {},
+  autoPlay: false,
+  skipMode: false,
+  currentCharacter: null,
+  history: [],
+  weather: 'sakura'
+};
+
+// ===== 粒子系统 =====
+const canvas = document.getElementById('particles-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+  constructor() {
+    this.reset();
+  }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.size = Math.random() * 3 + 1;
+    this.speedX = (Math.random() - 0.5) * 0.5;
+    this.speedY = (Math.random() - 0.5) * 0.5;
+    this.opacity = Math.random() * 0.5 + 0.1;
+    this.color = `hsla(${330 + Math.random() * 30}, 70%, 80%, ${this.opacity})`;
+  }
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+      this.reset();
+    }
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = this.color;
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 50; i++) {
+  particles.push(new Particle());
+}
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// ===== 天气效果 =====
+function createWeatherEffect(type) {
+  document.querySelectorAll('.rain-drop, .sakura-petal').forEach(el => el.remove());
+
+  if (type === 'sakura') {
+    for (let i = 0; i < 15; i++) {
+      const petal = document.createElement('div');
+      petal.className = 'sakura-petal';
+      petal.style.left = Math.random() * 100 + '%';
+      petal.style.animationDuration = (Math.random() * 3 + 4) + 's';
+      petal.style.animationDelay = Math.random() * 5 + 's';
+      petal.style.transform = `scale(${Math.random() * 0.5 + 0.5})`;
+      document.body.appendChild(petal);
+    }
+  } else if (type === 'rain') {
+    for (let i = 0; i < 30; i++) {
+      const drop = document.createElement('div');
+      drop.className = 'rain-drop';
+      drop.style.left = Math.random() * 100 + '%';
+      drop.style.height = (Math.random() * 20 + 10) + 'px';
+      drop.style.animationDuration = (Math.random() * 0.5 + 0.5) + 's';
+      drop.style.animationDelay = Math.random() * 2 + 's';
+      document.body.appendChild(drop);
+    }
+  }
+}
+
+// ===== 场景切换 =====
+function changeBackground(bg) {
+  const sceneBg = document.getElementById('scene-bg');
+  sceneBg.className = bg;
+}
+
+function showCharacter(charId) {
+  document.querySelectorAll('.character-art').forEach(el => el.classList.remove('active'));
+  if (charId) {
+    const el = document.getElementById('char-' + charId);
+    if (el) el.classList.add('active');
+    gameState.currentCharacter = charId;
+  }
+}
+
+function showBlush(charId) {
+  const blush = document.getElementById('blush-' + charId);
+  if (blush) blush.classList.add('show');
+}
+
+function hideBlush(charId) {
+  const blush = document.getElementById('blush-' + charId);
+  if (blush) blush.classList.remove('show');
+}
+
+// ===== 对话系统 =====
+let typewriterTimeout = null;
+let currentText = '';
+let textIndex = 0;
+let isTyping = false;
+
+function typeWriter(text, callback) {
+  const dialogueText = document.getElementById('dialogue-text');
+  dialogueText.innerHTML = '';
+  currentText = text;
+  textIndex = 0;
+  isTyping = true;
+
+  function type() {
+    if (textIndex < currentText.length) {
+      dialogueText.innerHTML += currentText[textIndex];
+      textIndex++;
+      typewriterTimeout = setTimeout(type, 40);
+    } else {
+      isTyping = false;
+      if (callback) callback();
+    }
+  }
+  type();
+}
+
+function skipTypewriter() {
+  if (isTyping) {
+    clearTimeout(typewriterTimeout);
+    document.getElementById('dialogue-text').innerHTML = currentText;
+    isTyping = false;
+  }
+}
+
+function showDialogue(speaker, text, callback) {
+  const box = document.getElementById('dialogue-box');
+  const nameEl = document.getElementById('speaker-name');
+  const choicesEl = document.getElementById('choices-container');
+
+  box.classList.add('show');
+  choicesEl.classList.remove('show');
+  nameEl.textContent = speaker;
+
+  typeWriter(text, callback);
+
+  gameState.history.push({ speaker, text });
+}
+
+function hideDialogue() {
+  document.getElementById('dialogue-box').classList.remove('show');
+}
+
+// ===== 选项系统 =====
+function showChoices(choices) {
+  const container = document.getElementById('choices-container');
+  const box = document.getElementById('dialogue-box');
+
+  box.classList.remove('show');
+  container.innerHTML = '';
+  container.classList.add('show');
+
+  choices.forEach((choice, index) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `
+      ${choice.text}
+      ${choice.hint ? `<div class="choice-hint">${choice.hint}</div>` : ''}
+    `;
+    btn.onclick = () => {
+      container.classList.remove('show');
+      if (choice.affection) {
+        Object.entries(choice.affection).forEach(([char, value]) => {
+          changeAffection(char, value);
+        });
+      }
+      if (choice.flag) {
+        gameState.flags[choice.flag] = true;
+      }
+      setTimeout(() => choice.next(), 300);
+    };
+    container.appendChild(btn);
+  });
+}
+
+// ===== 好感度系统 =====
+function changeAffection(char, value) {
+  const old = gameState.affection[char];
+  gameState.affection[char] = Math.max(0, Math.min(100, old + value));
+  const display = document.getElementById('affection-display');
+  display.classList.add('show');
+
+  const fill = document.getElementById('affection-fill');
+  const text = document.getElementById('affection-text');
+  fill.style.width = gameState.affection[char] + '%';
+  text.textContent = gameState.affection[char] + ' / 100';
+
+  // 好感度变化特效
+  const changeEl = document.createElement('div');
+  changeEl.className = 'affection-change ' + (value > 0 ? 'positive' : 'negative');
+  changeEl.textContent = value > 0 ? `❤️ +${value}` : `💔 ${value}`;
+  document.body.appendChild(changeEl);
+  setTimeout(() => changeEl.remove(), 1500);
+
+  // 心跳特效
+  if (value > 0) {
+    createHeartBurst();
+    if (value >= 10) showBlush(char);
+  }
+}
+
+function createHeartBurst() {
+  for (let i = 0; i < 5; i++) {
+    const heart = document.createElement('div');
+    heart.className = 'heart-burst';
+    heart.innerHTML = '❤️';
+    heart.style.left = (40 + Math.random() * 20) + '%';
+    heart.style.top = (40 + Math.random() * 20) + '%';
+    heart.style.fontSize = (15 + Math.random() * 20) + 'px';
+    heart.style.animationDelay = (Math.random() * 0.3) + 's';
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 2000);
+  }
+}
+
+// ===== CG 系统 =====
+function showCG(bgGradient, text, duration = 3000) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('cg-overlay');
+    const scene = document.getElementById('cg-scene');
+    const cgText = document.getElementById('cg-text');
+
+    scene.style.background = bgGradient;
+    cgText.textContent = text;
+    overlay.classList.add('show');
+
+    setTimeout(() => {
+      overlay.classList.remove('show');
+      resolve();
+    }, duration);
+  });
+}
+
+// ===== 场景标题 =====
+function showSceneTitle(title, subtitle = '') {
+  return new Promise(resolve => {
+    const el = document.createElement('div');
+    el.className = 'scene-title';
+    el.innerHTML = `${title}${subtitle ? `<br><small style="font-size:16px;color:var(--text-dim)">${subtitle}</small>` : ''}`;
+    document.body.appendChild(el);
+    setTimeout(() => { el.remove(); resolve(); }, 3000);
+  });
+}
+
+// ===== 结局系统 =====
+function showEnding(title, type, text) {
+  document.getElementById('game-container').style.display = 'none';
+  const ending = document.getElementById('ending-screen');
+  ending.style.background = 'linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 30%, #4a1942 60%, #1a0a2e 100%)';
+  document.getElementById('ending-title').textContent = title;
+  document.getElementById('ending-type').textContent = type;
+  document.getElementById('ending-text').innerHTML = text;
+  ending.classList.add('show');
+}
+
+// ===== 自动/快进 =====
+function toggleAuto() {
+  gameState.autoPlay = !gameState.autoPlay;
+  document.getElementById('auto-btn').classList.toggle('active');
+  if (gameState.autoPlay && !isTyping) {
+    document.getElementById('dialogue-box').click();
+  }
+}
+
+function toggleSkip() {
+  gameState.skipMode = !gameState.skipMode;
+  document.getElementById('skip-btn').classList.toggle('active');
+}
+
+// ===== 菜单 =====
+function showMenu() {
+  alert('菜单功能开发中...\n\n当前好感度：\n林小夏: ' + gameState.affection.xiaoxia +
+    '\n苏晚晴: ' + gameState.affection.wanqing +
+    '\n江雨桐: ' + gameState.affection.yutong);
+}
+
+// ===== 剧情数据 =====
+const storyData = {
+  // 序章
+  prologue: async () => {
+    changeBackground('bg-sakura');
+    createWeatherEffect('sakura');
+    await showSceneTitle('序章', '命运的邂逅');
+
+    showDialogue('旁白', '四月，樱花盛开的季节。', () => {
+      setTimeout(() => {
+        showDialogue('旁白', '你转学来到了这座海滨城市，开始了全新的高中生活。', () => {
+          setTimeout(() => {
+            showDialogue('旁白', '命运的齿轮，已经开始转动……', () => {
+              setTimeout(() => storyData.school_gate(), 1500);
+            });
+          }, 1500);
+        });
+      }, 1500);
+    });
+  },
+
+  // 学校门口
+  school_gate: async () => {
+    changeBackground('bg-sunset');
+    showDialogue('你', '（这就是新学校啊……比想象中还要大。）', () => {
+      setTimeout(() => {
+        showDialogue('你', '（第一天就迟到的话……）', () => {
+          setTimeout(() => {
+            showCharacter('xiaoxia');
+            showDialogue('？？？', '那个……你也是转学生吗？', () => {
+              setTimeout(() => {
+                showDialogue('你', '嗯？你、你是……？', () => {
+                  setTimeout(() => {
+                    showDialogue('林小夏', '嘻嘻，我叫林小夏！也是今天转学过来的~', () => {
+                      setTimeout(() => {
+                        showDialogue('林小夏', '太好了，终于有同伴了！我们一起进去吧？', () => {
+                          showChoices([
+                            {
+                              text: '好啊，一起走吧！',
+                              hint: '❤️ 小夏好感度 +5',
+                              affection: { xiaoxia: 5 },
+                              next: () => storyData.walk_with_xiaoxia()
+                            },
+                            {
+                              text: '不好意思，我想先自己看看……',
+                              hint: '小夏有些失落',
+                              next: () => storyData.walk_alone()
+                            }
+                          ]);
+                        });
+                      }, 1500);
+                    });
+                  }, 1500);
+                });
+              }, 1500);
+            });
+          }, 1000);
+        });
+      }, 1500);
+    });
+  },
+
+  // 和小夏一起走
+  walk_with_xiaoxia: async () => {
+    showDialogue('林小夏', '太好了！那我们走吧~', () => {
+      setTimeout(() => {
+        showDialogue('旁白', '林小夏开心地走在你身边，阳光洒在她的脸上，笑容格外灿烂。', () => {
+          setTimeout(() => {
+            showDialogue('林小夏', '对了，你是从哪里转来的呀？', () => {
+              showChoices([
+                {
+                  text: '从东京来的',
+                  hint: '❤️ 小夏好感度 +3',
+                  affection: { xiaoxia: 3 },
+                  next: () => {
+                    showDialogue('林小夏', '哇！东京！好厉害啊~我一直很想去呢！', () => {
+                      setTimeout(() => storyData.meet_president(), 2000);
+                    });
+                  }
+                },
+                {
+                  text: '一个很远的地方……',
+                  hint: '小夏更加好奇了',
+                  affection: { xiaoxia: 2 },
+                  next: () => {
+                    showDialogue('林小夏', '诶~好神秘啊！不过没关系，以后再告诉我也可以~', () => {
+                      setTimeout(() => storyData.meet_president(), 2000);
+                    });
+                  }
+                }
+              ]);
+            });
+          }, 2000);
+        });
+      }, 2000);
+    });
+  },
+
+  // 自己走
+  walk_alone: async () => {
+    showDialogue('林小夏', '这样啊……那、那学校里见~', () => {
+      setTimeout(() => {
+        showCharacter(null);
+        showDialogue('旁白', '你独自走进了校园。四处张望着这个陌生的环境。', () => {
+          setTimeout(() => storyData.meet_president(), 2000);
+        });
+      }, 1500);
+    });
+  },
+
+  // 遇见学生会长
+  meet_president: async () => {
+    changeBackground('bg-night');
+    showCharacter('wanqing');
+    showDialogue('？？？', '站住。', () => {
+      setTimeout(() => {
+        showDialogue('你', '诶？', () => {
+          setTimeout(() => {
+            showDialogue('苏晚晴', '你是新来的转学生吧。校服没有穿整齐。', () => {
+              setTimeout(() => {
+                showDialogue('旁白', '面前站着一个气质冷艳的女生，深蓝色的长发在阳光下泛着微光。', () => {
+                  setTimeout(() => {
+                    showDialogue('苏晚晴', '我是学生会会长，苏晚晴。在这里，规矩就是规矩。', () => {
+                      showChoices([
+                        {
+                          text: '对不起，我马上整理好！',
+                          hint: '❤️ 晚晴好感度 +3',
+                          affection: { wanqing: 3 },
+                          next: () => {
+                            showDialogue('苏晚晴', '……嗯。态度不错。', () => {
+                              setTimeout(() => {
+                                showDialogue('旁白', '她的嘴角微微上扬了一下，但很快恢复了冷淡的表情。', () => {
+                                  setTimeout(() => storyData.classroom(), 2000);
+                                });
+                              }, 1500);
+                            });
+                          }
+                        },
+                        {
+                          text: '这也管得太多了吧？',
+                          hint: '晚晴皱起了眉头',
+                          affection: { wanqing: -3 },
+                          next: () => {
+                            showDialogue('苏晚晴', '……看来你还不了解这里的规矩。以后你会明白的。', () => {
+                              setTimeout(() => storyData.classroom(), 2000);
+                            });
+                          }
+                        },
+                        {
+                          text: '（盯着她看）',
+                          hint: '❤️ 晚晴好感度 +5？',
+                          affection: { wanqing: 5 },
+                          flag: 'stared_at_wanqing',
+                          next: () => {
+                            showDialogue('苏晚晴', '……你、你看什么？', () => {
+                              setTimeout(() => {
+                                showBlush('wanqing');
+                                showDialogue('苏晚晴', '总之……下次注意。我走了。', () => {
+                                  setTimeout(() => {
+                                    hideBlush('wanqing');
+                                    showDialogue('旁白', '她匆匆转身离去，耳朵似乎有些发红。', () => {
+                                      setTimeout(() => storyData.classroom(), 2000);
+                                    });
+                                  }, 1500);
+                                });
+                              }, 1500);
+                            });
+                          }
+                        }
+                      ]);
+                    });
+                  }, 2000);
+                });
+              }, 1500);
+            });
+          }, 1500);
+        });
+      }, 1500);
+    });
+  },
+
+  // 教室
+  classroom: async () => {
+    changeBackground('bg-cafe');
+    showCharacter(null);
+    await showSceneTitle('第一节课', '命运的教室');
+
+    showDialogue('旁白', '你走进教室，发现座位旁边坐着一个安静看书的女生。', () => {
+      setTimeout(() => {
+        showCharacter('yutong');
+        showDialogue('旁白', '她似乎完全没有注意到你的存在，沉浸在书本的世界中。', () => {
+          setTimeout(() => {
+            showDialogue('你', '（好漂亮的女孩子……而且，有一种很特别的气质。）', () => {
+              setTimeout(() => {
+                showDialogue('江雨桐', '……', () => {
+                  setTimeout(() => {
+                    showDialogue('江雨桐', '你……在看我吗？', () => {
+                      setTimeout(() => {
+                        showDialogue('你', '啊！对、对不起！我不是故意的！', () => {
+                          setTimeout(() => {
+                            showDialogue('江雨桐', '……没关系。我只是很少被人这样看着。', () => {
+                              setTimeout(() => {
+                                showDialogue('江雨桐', '我叫江雨桐。你呢？', () => {
+                                  showChoices([
+                                    {
+                                      text: '我叫……（说出自己的名字）',
+                                      hint: '❤️ 雨桐好感度 +5',
+                                      affection: { yutong: 5 },
+                                      next: () => {
+                                        showDialogue('江雨桐', '……很好的名字。', () => {
+                                          setTimeout(() => {
+                                            showBlush('yutong');
+                                            showDialogue('江雨桐', '以后……请多指教。', () => {
+                                              setTimeout(() => storyData.lunch_break(), 2000);
+                                            });
+                                          }, 1500);
+                                        });
+                                      }
+                                    },
+                                    {
+                                      text: '你手里那本书是什么？',
+                                      hint: '❤️ 雨桐好感度 +8',
+                                      affection: { yutong: 8 },
+                                      next: () => {
+                                        showDialogue('江雨桐', '诶？这、这是……太宰治的《人间失格》。', () => {
+                                          setTimeout(() => {
+                                            showDialogue('江雨桐', '你也喜欢看书吗？', () => {
+                                              setTimeout(() => {
+                                                showDialogue('江雨桐', '……很少有人会注意到我看的书呢。', () => {
+                                                  setTimeout(() => {
+                                                    showBlush('yutong');
+                                                    showDialogue('旁白', '她的表情柔和了许多，嘴角露出了淡淡的微笑。', () => {
+                                                      setTimeout(() => storyData.lunch_break(), 2000);
+                                                    });
+                                                  }, 1500);
+                                                });
+                                              }, 1500);
+                                            });
+                                          }, 1500);
+                                        });
+                                      }
+                                    }
+                                  ]);
+                                });
+                              }, 1500);
+                            });
+                          }, 1500);
+                        });
+                      }, 1500);
+                    });
+                  }, 2000);
+                });
+              }, 1500);
+            });
+          }, 1500);
+        });
+      }, 1500);
+    });
+  },
+
+  // 午休
+  lunch_break: async () => {
+    changeBackground('bg-sunset');
+    showCharacter(null);
+    await showSceneTitle('午休', '屋顶的秘密');
+
+    showDialogue('旁白', '午休时间，你来到了学校屋顶。', () => {
+      setTimeout(() => {
+        showDialogue('旁白', '微风吹过，带着海的气息。远处可以看到大海。', () => {
+          setTimeout(() => {
+            showDialogue('你', '（这里的风景真好……）', () => {
+              setTimeout(() => {
+                // 根据好感度决定谁出现
+                const maxChar = Object.entries(gameState.affection)
+                  .sort((a, b) => b[1] - a[1])[0][0];
+
+                if (maxChar === 'xiaoxia') {
+                  storyData.rooftop_xiaoxia();
+                } else if (maxChar === 'wanqing') {
+                  storyData.rooftop_wanqing();
+                } else {
+                  storyData.rooftop_yutong();
+                }
+              }, 2000);
+            });
+          }, 1500);
+        });
+      }, 1500);
+    });
+  },
+
+  // 屋顶 - 小夏
+  rooftop_xiaoxia: async () => {
+    showCharacter('xiaoxia');
+    showDialogue('林小夏', '啊！你也在这里！', () => {
+      setTimeout(() => {
+        showDialogue('林小夏', '这个屋顶是我的秘密基地哦~现在也是你的了！', () => {
+          setTimeout(() => {
+            showDialogue('林小夏', '那个……我带了便当，要不要一起吃？', () => {
+              showChoices([
+                {
+                  text: '好啊，一起吃吧！',
+                  hint: '❤️ 小夏好感度 +10',
+                  affection: { xiaoxia: 10 },
+                  next: () => {
+                    showDialogue('林小夏', '太好了！我做了好多呢~', () => {
+                      setTimeout(() => {
+                        showDialogue('旁白', '她打开便当盒，里面是精心制作的可爱饭团。', () => {
+                          setTimeout(() => {
+                            showDialogue('林小夏', '怎么样？好吃吗？', () => {
+                              setTimeout(() => {
+                                showDialogue('你', '嗯！很好吃！', () => {
+                                  setTimeout(() => {
+                                    showBlush('xiaoxia');
+                                    showDialogue('林小夏', '嘻嘻……太好了。', () => {
+                                      setTimeout(() => {
+                                        showDialogue('旁白', '阳光下，她的笑容比任何风景都要耀眼。', () => {
+                                          setTimeout(() => storyData.afternoon(), 2000);
+                                        });
+                                      }, 1500);
+                                    });
+                                  }, 1500);
+                                });
+                              }, 1500);
+                            });
+                          }, 1500);
+                        });
+                      }, 1500);
+                    });
+                  }
+                },
+                {
+                  text: '我还有点事，先走了',
+                  next: () => {
+                    showDialogue('林小夏', '这样啊……那、那下次吧！', () => {
+                      setTimeout(() => storyData.afternoon(), 1500);
+                    });
+                  }
+                }
+              ]);
+            });
+          }, 2000);
+        });
+      }, 1500);
+    });
+  },
+
+  // 屋顶 - 晚晴
+  rooftop_wanqing: async () => {
+    showCharacter('wanqing');
+    showDialogue('苏晚晴', '……你怎么会在这里？', () => {
+      setTimeout(() => {
+        showDialogue('苏晚晴', '这里平时不会有人来的。', () => {
+          setTimeout(() => {
+            showDialogue('你', '学生会会长也会逃课吗？', () => {
+              setTimeout(() => {
+                showDialogue('苏晚晴', '……我只是需要安静一下。', () => {
+                  setTimeout(() => {
+                    showDialogue('旁白', '海风吹起她的长发，夕阳映照在她的侧脸上。', () => {
+                      setTimeout(() => {
+                        showDialogue('苏晚晴', '……你，不讨厌我吗？早上那样说你。', () => {
+                          showChoices([
+                            {
+                              text: '不讨厌。反而觉得你很认真。',
+                              hint: '❤️ 晚晴好感度 +10',
+                              affection: { wanqing: 10 },
+                              next: () => {
+                                showDialogue('苏晚晴', '……', () => {
+                                  setTimeout(() => {
+                                    showBlush('wanqing');
+                                    showDialogue('苏晚晴', '你这个人……真是奇怪。', () => {
+                                      setTimeout(() => {
+                                        showDialogue('旁白', '她的表情柔和了下来，嘴角微微上扬。', () => {
+                                          setTimeout(() => storyData.afternoon(), 2000);
+                                        });
+                                      }, 1500);
+                                    });
+                                  }, 1500);
+                                });
+                              }
+                            },
+                            {
+                              text: '有点讨厌。',
+                              hint: '晚晴的表情暗淡了',
+                              affection: { wanqing: -5 },
+                              next: () => {
+                                showDialogue('苏晚晴', '……是吗。那你可以走了。', () => {
+                                  setTimeout(() => storyData.afternoon(), 1500);
+                                });
+                              }
+                            }
+                          ]);
+                        });
+                      }, 2000);
+                    });
+                  }, 1500);
+                });
+              }, 1500);
+            });
+          }, 1500);
+        });
+      }, 1500);
+    });
+  },
+
+  // 屋顶 - 雨桐
+  rooftop_yutong: async () => {
+    showCharacter('yutong');
+    showDialogue('江雨桐', '……你找到这里了啊。', () => {
+      setTimeout(() => {
+        showDialogue('江雨桐', '这里是我写诗的地方。风的感觉……很适合思考。', () => {
+          setTimeout(() => {
+            showDialogue('江雨桐', '要听听我写的诗吗？', () => {
+              showChoices([
+                {
+                  text: '很想听。',
+                  hint: '❤️ 雨桐好感度 +10',
+                  affection: { yutong: 10 },
+                  next: () => {
+                    showDialogue('江雨桐', '……"海风吹过屋顶，带着远方的味道，和你的气息。"', () => {
+                      setTimeout(() => {
+                        showDialogue('江雨桐', '……这是我今天写的。', () => {
+                          setTimeout(() => {
+                            showBlush('yutong');
+                            showDialogue('旁白', '她的声音轻柔如风，诗句中似乎藏着什么心意。', () => {
+                              setTimeout(() => storyData.afternoon(), 2000);
+                            });
+                          }, 1500);
+                        });
+                      }, 2000);
+                    });
+                  }
+                },
+                {
+                  text: '我不太懂诗……',
+                  next: () => {
+                    showDialogue('江雨桐', '……没关系。不是所有人都喜欢诗的。', () => {
+                      setTimeout(() => storyData.afternoon(), 1500);
+                    });
+                  }
+                }
+              ]);
+            });
+          }, 2000);
+        });
+      }, 1500);
+    });
+  },
+
+  // 下午
+  afternoon: async () => {
+    changeBackground('bg-cafe');
+    showCharacter(null);
+    await showSceneTitle('放学后', '命运的选择');
+
+    showDialogue('旁白', '放学铃声响起，夕阳的余晖洒进教室。', () => {
+      setTimeout(() => {
+        showDialogue('旁白', '今天遇到了三个特别的女孩。现在，你想和谁一起度过放学后的时间？', () => {
+          setTimeout(() => {
+            showChoices([
+              {
+                text: '去找林小夏',
+                hint: '温柔甜美的邻家女孩',
+                next: () => storyData.evening_xiaoxia()
+              },
+              {
+                text: '去找苏晚晴',
+                hint: '冷艳高贵的学生会长',
+                next: () => storyData.evening_wanqing()
+              },
+              {
+                text: '去找江雨桐',
+                hint: '神秘忧郁的文艺少女',
+                next: () => storyData.evening_yutong()
+              }
+            ]);
+          }, 2000);
+        });
+      }, 1500);
+    });
+  },
+
+  // 晚上 - 小夏线
+  evening_xiaoxia: async () => {
+    changeBackground('bg-beach');
+    createWeatherEffect('sakura');
+    showCharacter('xiaoxia');
+    await showSceneTitle('海边', '与小夏的傍晚');
+
+    showDialogue('林小夏', '诶？你想和我一起散步？', () => {
+      setTimeout(() => {
+        showDialogue('林小夏', '好、好啊！我知道一个好地方！', () => {
+          setTimeout(() => {
+            showDialogue('旁白', '她拉着你的手，跑向海边。', () => {
+              setTimeout(() => {
+                showDialogue('林小夏', '看！夕阳好漂亮啊！', () => {
+                  setTimeout(() => {
+                    showDialogue('旁白', '海风吹起她的长发，夕阳把一切都染成了金色。', () => {
+                      setTimeout(() => {
+                        showDialogue('林小夏', '那个……我有话想对你说。', () => {
+                          setTimeout(() => {
+                            showDialogue('林小夏', '其实……从第一眼见到你，我就觉得……', () => {
+                              setTimeout(() => {
+                                showDialogue('林小夏', '我们一定会成为很好的朋友的！', () => {
+                                  setTimeout(() => {
+                                    showDialogue('旁白', '她突然凑近了你。', () => {
+                                      setTimeout(() => {
+                                        showBlush('xiaoxia');
+                                        showDialogue('林小夏', '……不止是朋友。', () => {
+                                          setTimeout(() => {
+                                            // CG场景
+                                            showCG(
+                                              'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)',
+                                              '夕阳下，她轻轻地靠在了你的肩上。',
+                                              4000
+                                            ).then(() => {
+                                              storyData.ending_check();
+                                            });
+                                          }, 2000);
+                                        });
+                                      }, 1500);
+                                    });
+                                  }, 1500);
+                                });
+                              }, 2000);
+                            });
+                          }, 1500);
+                        });
+                      }, 2000);
+                    });
+                  }, 1500);
+                });
+              }, 1500);
+            });
+          }, 1500);
+        });
+      }, 1500);
+    });
+  },
+
+  // 晚上 - 晚晴线
+  evening_wanqing: async () => {
+    changeBackground('bg-night');
+    showCharacter('wanqing');
+    await showSceneTitle('学生会室', '与晚晴的夜晚');
+
+    showDialogue('苏晚晴', '……你来干什么？', () => {
+      setTimeout(() => {
+        showDialogue('你', '想来看看学生会会长工作认真的样子。', () => {
+          setTimeout(() => {
+            showDialogue('苏晚晴', '……无聊。', () => {
+              setTimeout(() => {
+                showDialogue('旁白', '虽然这么说，但她并没有赶你走。', () => {
+                  setTimeout(() => {
+                    showDialogue('苏晚晴', '……既然来了，就帮我整理文件吧。', () => {
+                      setTimeout(() => {
+                        showDialogue('旁白', '你们并肩工作着，窗外的月光洒进来。', () => {
+                          setTimeout(() => {
+                            showDialogue('苏晚晴', '……今天，谢谢你。', () => {
+                              setTimeout(() => {
+                                showDialogue('苏晚晴', '很少有人愿意陪我。', () => {
+                                  setTimeout(() => {
+                                    showDialogue('苏晚晴', '因为我是会长，大家都……', () => {
+                                      setTimeout(() => {
+                                        showBlush('wanqing');
+                                        showDialogue('苏晚晴', '……不，没什么。', () => {
+                                          setTimeout(() => {
+                                            showCG(
+                                              'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                              '月光下，她靠在了你的肩膀上，闭上了眼睛。',
+                                              4000
+                                            ).then(() => {
+                                              storyData.ending_check();
+                                            });
+                                          }, 2000);
+                                        });
+                                      }, 1500);
+                                    });
+                                  }, 1500);
+                                });
+                              }, 1500);
+                            });
+                          }, 2000);
+                        });
+                      }, 1500);
+                    });
+                  }, 2000);
+                });
+              }, 1500);
+            });
+          }, 1500);
+        });
+      }, 1500);
+    });
+  },
+
+  // 晚上 - 雨桐线
+  evening_yutong: async () => {
+    changeBackground('bg-rain');
+    createWeatherEffect('rain');
+    showCharacter('yutong');
+    await showSceneTitle('图书馆', '与雨桐的雨夜');
+
+    showDialogue('江雨桐', '……下雨了。', () => {
+      setTimeout(() => {
+        showDialogue('江雨桐', '你……没有带伞吗？', () => {
+          setTimeout(() => {
+            showDialogue('你', '嗯，没想到会下雨。', () => {
+              setTimeout(() => {
+                showDialogue('江雨桐', '……那，要不要一起等雨停？', () => {
+                  setTimeout(() => {
+                    showDialogue('旁白', '你们坐在图书馆的窗边，听着雨声。', () => {
+                      setTimeout(() => {
+                        showDialogue('江雨桐', '……我写了一首诗。关于你的。', () => {
+                          setTimeout(() => {
+                            showDialogue('江雨桐', '"雨滴落在窗上，像心跳的节奏。你坐在我身旁，世界变得安静。"', () => {
+                              setTimeout(() => {
+                                showDialogue('江雨桐', '"我从未想过，会有这样一个人，让我想要……"', () => {
+                                  setTimeout(() => {
+                                    showDialogue('江雨桐', '……想要靠近。', () => {
+                                      setTimeout(() => {
+                                        showBlush('yutong');
+                                        showDialogue('旁白', '她的声音越来越小，脸越来越红。', () => {
+                                          setTimeout(() => {
+                                            showCG(
+                                              'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+                                              '雨声中，她轻轻地靠在了你的肩膀上。',
+                                              4000
+                                            ).then(() => {
+                                              storyData.ending_check();
+                                            });
+                                          }, 2000);
+                                        });
+                                      }, 1500);
+                                    });
+                                  }, 2000);
+                                });
+                              }, 1500);
+                            });
+                          }, 2000);
+                        });
+                      }, 2000);
+                    });
+                  }, 1500);
+                });
+              }, 1500);
+            });
+          }, 1500);
+        });
+      }, 1500);
+    });
+  },
+
+  // 结局判定
+  ending_check: async () => {
+    const { xiaoxia, wanqing, yutong } = gameState.affection;
+    const max = Math.max(xiaoxia, wanqing, yutong);
+
+    if (max >= 30) {
+      // 好结局
+      if (max === xiaoxia) {
+        storyData.ending_good_xiaoxia();
+      } else if (max === wanqing) {
+        storyData.ending_good_wanqing();
+      } else {
+        storyData.ending_good_yutong();
+      }
+    } else if (max >= 15) {
+      // 普通结局
+      storyData.ending_normal();
+    } else {
+      // 孤独结局
+      storyData.ending_alone();
+    }
+  },
+
+  // 小夏好结局
+  ending_good_xiaoxia: async () => {
+    showEnding(
+      '永远的夏天',
+      '💕 Good Ending - 林小夏',
+      '从那天起，你和小夏每天都在一起。<br><br>' +
+      '一起上学，一起吃午饭，一起看夕阳。<br><br>' +
+      '她的笑容，成为了你每天最期待的风景。<br><br>' +
+      '"呐，以后也要一直在一起哦~"<br><br>' +
+      '她这样说着，握紧了你的手。<br><br>' +
+      '这个夏天，成为了你们永远的回忆。'
+    );
+  },
+
+  // 晚晴好结局
+  ending_good_wanqing: async () => {
+    showEnding(
+      '月光下的承诺',
+      '💕 Good Ending - 苏晚晴',
+      '从那天起，学生会室成了你们的秘密基地。<br><br>' +
+      '她依然冷淡，但在你面前，会展露笑容。<br><br>' +
+      '"……只有在你面前，我才是真正的我。"<br><br>' +
+      '月光下，她轻轻地靠在你的肩上。<br><br>' +
+      '"以后……也要陪在我身边。"<br><br>' +
+      '这是只属于你们的，月光下的承诺。'
+    );
+  },
+
+  // 雨桐好结局
+  ending_good_yutong: async () => {
+    showEnding(
+      '雨后的彩虹',
+      '💕 Good Ending - 江雨桐',
+      '从那天起，她写的诗里，都有你的影子。<br><br>' +
+      '"因为你，我学会了微笑。<br>' +
+      '因为你，世界变得明亮。<br>' +
+      '因为你，我想一直……<br>' +
+      '写下去。"<br><br>' +
+      '雨后的天空，出现了彩虹。<br><br>' +
+      '就像她的笑容一样，美丽而珍贵。'
+    );
+  },
+
+  // 普通结局
+  ending_normal: async () => {
+    showEnding(
+      '新的开始',
+      '💛 Normal Ending',
+      '虽然没有走到最后，但这段回忆是真实的。<br><br>' +
+      '也许有一天，你们会在某个地方再次相遇。<br><br>' +
+      '到那时，希望能说出今天没能说出的话。<br><br>' +
+      '「谢谢你，出现在我的生命中。」'
+    );
+  },
+
+  // 孤独结局
+  ending_alone: async () => {
+    showEnding(
+      '独自一人的夕阳',
+      '💔 Bad Ending',
+      '你看着夕阳，想着今天遇到的那些人。<br><br>' +
+      '也许，如果当时能勇敢一点……<br><br>' +
+      '但错过了，就是错过了。<br><br>' +
+      '「下一次……一定要好好珍惜。」<br><br>' +
+      '你在心中这样对自己说。'
+    );
+  }
+};
+
+// ===== 开始游戏 =====
+function startGame() {
+  document.getElementById('title-screen').style.display = 'none';
+  document.getElementById('game-container').style.display = 'flex';
+  storyData.prologue();
+}
+
+// ===== 点击推进 =====
+document.getElementById('dialogue-box').addEventListener('click', () => {
+  if (isTyping) {
+    skipTypewriter();
+  }
+});
+
+// 键盘快捷键
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.code === 'Enter') {
+    if (isTyping) {
+      skipTypewriter();
+    }
+  }
+  if (e.code === 'KeyA') toggleAuto();
+  if (e.code === 'KeyS') toggleSkip();
+});
+</script>
+
+</body>
+</html>

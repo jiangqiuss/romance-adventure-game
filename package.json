@@ -1,0 +1,10 @@
+{
+  "name": "romance-adventure-game",
+  "version": "1.0.0",
+  "description": "互动式恋爱文字冒险游戏",
+  "scripts": {
+    "start": "npx serve .",
+    "deploy:netlify": "npx netlify-cli deploy --prod --dir .",
+    "deploy:vercel": "npx vercel --prod"
+  }
+}
